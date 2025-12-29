@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Présentation Schéma SQL</title>
+    <title>Structure SQL - Base de Données Scolaire</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
     <div class="container">
-        <h1>Structure de la Base de Données Scolaire</h1>
-        <p>Ce script SQL définit les tables, les relations et les contraintes d'intégrité du système.</p>
+        <header>
+            <h1>Documentation Base de Données</h1>
+            <p>Script SQL de création des tables et des relations pour le système de gestion scolaire.</p>
+        </header>
 
         <div class="code-window">
             <div class="code-header">
@@ -21,43 +22,190 @@
                     <span class="dot yellow"></span>
                     <span class="dot green"></span>
                 </div>
-                <span class="file-name">database_schema.sql</span>
+                <span class="file-name">schema_ecole.sql</span>
             </div>
-            <pre><code>
-<span class="keyword">CREATE TABLE</span> class(
-   id_class <span class="type">SERIAL</span>,
-   list_of_class <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   <span class="keyword">PRIMARY KEY</span>(id_class)
+            <pre><code class="language-sql">
+CREATE TABLE class(
+   id_class SERIAL,
+   list_of_class VARCHAR(50)  NOT NULL,
+   PRIMARY KEY(id_class)
 );
 
-<span class="keyword">CREATE TABLE</span> parents(
-   id_parent <span class="type">SERIAL</span>,
-   name <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   surname <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   email <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   phone_number <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   <span class="keyword">PRIMARY KEY</span>(id_parent),
-   <span class="keyword">UNIQUE</span>(email),
-   <span class="keyword">UNIQUE</span>(phone_number)
+CREATE TABLE parents(
+   id_parent SERIAL,
+   name VARCHAR(50)  NOT NULL,
+   surname VARCHAR(50)  NOT NULL,
+   email VARCHAR(50)  NOT NULL,
+   phone_number VARCHAR(50)  NOT NULL,
+   PRIMARY KEY(id_parent),
+   UNIQUE(email),
+   UNIQUE(phone_number)
 );
 
-<span class="comment">-- ... Les autres tables suivent la même structure ...</span>
+CREATE TABLE subject(
+   id_subject SERIAL,
+   subject VARCHAR(50)  NOT NULL,
+   PRIMARY KEY(id_subject)
+);
 
-<span class="keyword">CREATE TABLE</span> student(
-   id_student <span class="type">SERIAL</span>,
-   name <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   surname <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
-   date_of_birth <span class="type">DATE</span> <span class="keyword">NOT NULL</span>,
-   id_grade <span class="type">INTEGER</span> <span class="keyword">NOT NULL</span>,
-   id_class <span class="type">INTEGER</span> <span class="keyword">NOT NULL</span>,
-   <span class="keyword">PRIMARY KEY</span>(id_student),
-   <span class="keyword">FOREIGN KEY</span>(id_grade) <span class="keyword">REFERENCES</span> grade(id_grade),
-   <span class="keyword">FOREIGN KEY</span>(id_class) <span class="keyword">REFERENCES</span> class(id_class)
+CREATE TABLE teacher(
+   id_teacher SERIAL,
+   name VARCHAR(50)  NOT NULL,
+   surname VARCHAR(50)  NOT NULL,
+   email VARCHAR(50)  NOT NULL,
+   phone_number VARCHAR(50)  NOT NULL,
+   PRIMARY KEY(id_teacher),
+   UNIQUE(email),
+   UNIQUE(phone_number)
+);
+
+CREATE TABLE user_(
+   id_user SERIAL,
+   role VARCHAR(50)  NOT NULL,
+   id_teacher INTEGER NOT NULL,
+   PRIMARY KEY(id_user),
+   UNIQUE(id_teacher),
+   FOREIGN KEY(id_teacher) REFERENCES teacher(id_teacher)
+);
+
+CREATE TABLE messages(
+   id_message SERIAL,
+   content VARCHAR(1000)  NOT NULL,
+   id_user INTEGER NOT NULL,
+   PRIMARY KEY(id_message),
+   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+);
+
+CREATE TABLE audit(
+   id_audit_ SERIAL,
+   time_ TIME NOT NULL,
+   ip VARCHAR(50)  NOT NULL,
+   PRIMARY KEY(id_audit_),
+   UNIQUE(ip)
+);
+
+CREATE TABLE type(
+   id_type SERIAL,
+   creation VARCHAR(50) ,
+   modification VARCHAR(50) ,
+   delete_ VARCHAR(50) ,
+   id_audit_ INTEGER NOT NULL,
+   PRIMARY KEY(id_type),
+   FOREIGN KEY(id_audit_) REFERENCES audit(id_audit_)
+);
+
+CREATE TABLE inscription(
+   id_inscription SERIAL,
+   name VARCHAR(50)  NOT NULL,
+   surname VARCHAR(50)  NOT NULL,
+   date_ DATE NOT NULL,
+   PRIMARY KEY(id_inscription)
+);
+
+CREATE TABLE grade(
+   id_grade SERIAL,
+   grade VARCHAR(50) ,
+   coefficient NUMERIC(4,2)  ,
+   id_subject INTEGER NOT NULL,
+   PRIMARY KEY(id_grade),
+   FOREIGN KEY(id_subject) REFERENCES subject(id_subject)
+);
+
+CREATE TABLE school(
+   id_school SERIAL,
+   name_of_the_school VARCHAR(50)  NOT NULL,
+   address VARCHAR(50)  NOT NULL,
+   telephone VARCHAR(50)  NOT NULL,
+   id_inscription INTEGER NOT NULL,
+   PRIMARY KEY(id_school),
+   UNIQUE(telephone),
+   FOREIGN KEY(id_inscription) REFERENCES inscription(id_inscription)
+);
+
+CREATE TABLE student(
+   id_student SERIAL,
+   name VARCHAR(50)  NOT NULL,
+   surname VARCHAR(50)  NOT NULL,
+   date_of_birth DATE NOT NULL,
+   id_grade INTEGER NOT NULL,
+   id_class INTEGER NOT NULL,
+   PRIMARY KEY(id_student),
+   FOREIGN KEY(id_grade) REFERENCES grade(id_grade),
+   FOREIGN KEY(id_class) REFERENCES class(id_class)
+);
+
+CREATE TABLE personel(
+   id_personel SERIAL,
+   name VARCHAR(50)  NOT NULL,
+   surname VARCHAR(50)  NOT NULL,
+   email VARCHAR(50)  NOT NULL,
+   phone_number VARCHAR(50)  NOT NULL,
+   id_school INTEGER NOT NULL,
+   id_user INTEGER NOT NULL,
+   PRIMARY KEY(id_personel),
+   UNIQUE(id_user),
+   UNIQUE(email),
+   UNIQUE(phone_number),
+   FOREIGN KEY(id_school) REFERENCES school(id_school),
+   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+);
+
+CREATE TABLE absence(
+   id_absence SERIAL,
+   motif VARCHAR(50)  NOT NULL,
+   justification VARCHAR(50)  NOT NULL,
+   date_ DATE NOT NULL,
+   id_student INTEGER NOT NULL,
+   PRIMARY KEY(id_absence),
+   FOREIGN KEY(id_student) REFERENCES student(id_student)
+);
+
+CREATE TABLE authority_(
+   id_student INTEGER,
+   id_parent INTEGER,
+   PRIMARY KEY(id_student, id_parent),
+   FOREIGN KEY(id_student) REFERENCES student(id_student),
+   FOREIGN KEY(id_parent) REFERENCES parents(id_parent)
+);
+
+CREATE TABLE teach(
+   id_class INTEGER,
+   id_subject INTEGER,
+   PRIMARY KEY(id_class, id_subject),
+   FOREIGN KEY(id_class) REFERENCES class(id_class),
+   FOREIGN KEY(id_subject) REFERENCES subject(id_subject)
+);
+
+CREATE TABLE present(
+   id_parent INTEGER,
+   id_subject INTEGER,
+   id_teacher INTEGER,
+   PRIMARY KEY(id_parent, id_subject, id_teacher),
+   FOREIGN KEY(id_parent) REFERENCES parents(id_parent),
+   FOREIGN KEY(id_subject) REFERENCES subject(id_subject),
+   FOREIGN KEY(id_teacher) REFERENCES teacher(id_teacher)
+);
+
+CREATE TABLE utilize(
+   id_student INTEGER,
+   id_user INTEGER,
+   PRIMARY KEY(id_student, id_user),
+   FOREIGN KEY(id_student) REFERENCES student(id_student),
+   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+);
+
+CREATE TABLE auditing(
+   id_user INTEGER,
+   id_audit_ INTEGER,
+   PRIMARY KEY(id_user, id_audit_),
+   FOREIGN KEY(id_user) REFERENCES user_(id_user),
+   FOREIGN KEY(id_audit_) REFERENCES audit(id_audit_)
 );
             </code></pre>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
 </body>
-
 </html>
