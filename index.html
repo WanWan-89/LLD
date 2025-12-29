@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Présentation Schéma SQL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Structure de la Base de Données Scolaire</h1>
+        <p>Ce script SQL définit les tables, les relations et les contraintes d'intégrité du système.</p>
+
+        <div class="code-window">
+            <div class="code-header">
+                <div class="buttons">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                </div>
+                <span class="file-name">database_schema.sql</span>
+            </div>
+            <pre><code>
+<span class="keyword">CREATE TABLE</span> class(
+   id_class <span class="type">SERIAL</span>,
+   list_of_class <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   <span class="keyword">PRIMARY KEY</span>(id_class)
+);
+
+<span class="keyword">CREATE TABLE</span> parents(
+   id_parent <span class="type">SERIAL</span>,
+   name <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   surname <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   email <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   phone_number <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   <span class="keyword">PRIMARY KEY</span>(id_parent),
+   <span class="keyword">UNIQUE</span>(email),
+   <span class="keyword">UNIQUE</span>(phone_number)
+);
+
+<span class="comment">-- ... Les autres tables suivent la même structure ...</span>
+
+<span class="keyword">CREATE TABLE</span> student(
+   id_student <span class="type">SERIAL</span>,
+   name <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   surname <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL</span>,
+   date_of_birth <span class="type">DATE</span> <span class="keyword">NOT NULL</span>,
+   id_grade <span class="type">INTEGER</span> <span class="keyword">NOT NULL</span>,
+   id_class <span class="type">INTEGER</span> <span class="keyword">NOT NULL</span>,
+   <span class="keyword">PRIMARY KEY</span>(id_student),
+   <span class="keyword">FOREIGN KEY</span>(id_grade) <span class="keyword">REFERENCES</span> grade(id_grade),
+   <span class="keyword">FOREIGN KEY</span>(id_class) <span class="keyword">REFERENCES</span> class(id_class)
+);
+            </code></pre>
+        </div>
+    </div>
+
+</body>
+
+</html>
