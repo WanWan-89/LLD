@@ -1,44 +1,59 @@
-/* Configuration générale */
+/* Reset et styles de base */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    background-color: #f4f7f6;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    justify-content: center;
-    padding: 40px;
-    color: #333;
+    background-color: #0f172a; /* Fond sombre moderne */
+    color: #e2e8f0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 2rem;
 }
 
 .container {
-    max-width: 900px;
-    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
 }
 
 h1 {
-    color: #2c3e50;
-    border-left: 5px solid #3498db;
-    padding-left: 15px;
+    font-size: 2.5rem;
+    color: #38bdf8;
+    margin-bottom: 0.5rem;
 }
 
-/* Fenêtre de code style Mac/Linux */
+header p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+/* Fenêtre d'éditeur de code */
 .code-window {
     background-color: #1e1e1e;
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid #334155;
     overflow: hidden;
-    margin-top: 20px;
 }
 
 .code-header {
-    background-color: #323232;
-    padding: 10px 15px;
+    background-color: #1e293b;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    border-bottom: 1px solid #334155;
 }
 
 .buttons {
     display: flex;
     gap: 8px;
+    margin-right: 20px;
 }
 
 .dot {
@@ -47,50 +62,43 @@ h1 {
     border-radius: 50%;
 }
 
-.red {
-    background-color: #ff5f56;
-}
-
-.yellow {
-    background-color: #ffbd2e;
-}
-
-.green {
-    background-color: #27c93f;
-}
+.red { background-color: #ff5f56; }
+.yellow { background-color: #ffbd2e; }
+.green { background-color: #27c93f; }
 
 .file-name {
-    color: #aaa;
-    font-size: 0.9em;
-    font-family: monospace;
+    color: #94a3b8;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
 }
 
-/* Style du texte SQL */
-pre {
-    margin: 0;
-    padding: 20px;
-    overflow-x: auto;
+/* Ajustements Prism.js */
+pre[class*="language-"] {
+    margin: 0 !important;
+    padding: 1.5rem !important;
+    background: transparent !important; /* On garde le fond de notre div */
+    max-height: 600px;
+    overflow-y: auto;
+    font-size: 0.95rem;
 }
 
-code {
-    font-family: 'Fira Code', 'Courier New', monospace;
-    color: #d4d4d4;
-    line-height: 1.5;
+code[class*="language-"] {
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Cascadia Code', monospace !important;
 }
 
-/* Coloration syntaxique */
-.keyword {
-    color: #569cd6;
-    font-weight: bold;
+/* Personnalisation de la barre de défilement */
+pre::-webkit-scrollbar {
+    width: 10px;
 }
-
-/* CREATE, TABLE, PRIMARY KEY */
-.type {
-    color: #4ec9b0;
+pre::-webkit-scrollbar-track {
+    background: #1e293b;
 }
-
-/* SERIAL, VARCHAR, INTEGER */
-.comment {
-    color: #6a9955;
-    font-style: italic;
+pre::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 5px;
+}
+pre::-webkit-scrollbar-thumb:hover {
+    background: #38bdf8;
 }
