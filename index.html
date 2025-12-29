@@ -25,181 +25,142 @@
                 <span class="file-name">schema_ecole.sql</span>
             </div>
             <pre><code class="language-sql">
-CREATE TABLE class(
-   id_class SERIAL,
-   list_of_class VARCHAR(50)  NOT NULL,
-   PRIMARY KEY(id_class)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS edusys.class (
+    id_class BIGSERIAL PRIMARY KEY,
+    class_name TEXT NOT NULL
 );
 
-CREATE TABLE parents(
-   id_parent SERIAL,
-   name VARCHAR(50)  NOT NULL,
-   surname VARCHAR(50)  NOT NULL,
-   email VARCHAR(50)  NOT NULL,
-   phone_number VARCHAR(50)  NOT NULL,
-   PRIMARY KEY(id_parent),
-   UNIQUE(email),
-   UNIQUE(phone_number)
+CREATE TABLE IF NOT EXISTS edusys.parents (
+    id_parent BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    phone_number TEXT NOT NULL,
+    email_digest TEXT
 );
 
-CREATE TABLE subject(
-   id_subject SERIAL,
-   subject VARCHAR(50)  NOT NULL,
-   PRIMARY KEY(id_subject)
+CREATE TABLE IF NOT EXISTS edusys.subject (
+    id_subject BIGSERIAL PRIMARY KEY,
+    subject_name TEXT NOT NULL
 );
 
-CREATE TABLE teacher(
-   id_teacher SERIAL,
-   name VARCHAR(50)  NOT NULL,
-   surname VARCHAR(50)  NOT NULL,
-   email VARCHAR(50)  NOT NULL,
-   phone_number VARCHAR(50)  NOT NULL,
-   PRIMARY KEY(id_teacher),
-   UNIQUE(email),
-   UNIQUE(phone_number)
+CREATE TABLE IF NOT EXISTS edusys.teacher (
+    id_teacher BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    phone_number TEXT NOT NULL,
+    email_digest TEXT
 );
 
-CREATE TABLE user_(
-   id_user SERIAL,
-   role VARCHAR(50)  NOT NULL,
-   id_teacher INTEGER NOT NULL,
-   PRIMARY KEY(id_user),
-   UNIQUE(id_teacher),
-   FOREIGN KEY(id_teacher) REFERENCES teacher(id_teacher)
+CREATE TABLE IF NOT EXISTS edusys.user_ (
+    id_user BIGSERIAL PRIMARY KEY,
+    role TEXT NOT NULL CHECK (role IN ('teacher','parent','student','personel','admin')),
+    id_teacher BIGINT UNIQUE REFERENCES edusys.teacher(id_teacher) ON DELETE CASCADE
 );
 
-CREATE TABLE messages(
-   id_message SERIAL,
-   content VARCHAR(1000)  NOT NULL,
-   id_user INTEGER NOT NULL,
-   PRIMARY KEY(id_message),
-   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+CREATE TABLE IF NOT EXISTS edusys.messages (
+    id_message BIGSERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    id_user BIGINT NOT NULL REFERENCES edusys.user_(id_user) ON DELETE CASCADE,
+    content_search tsvector
 );
 
-CREATE TABLE audit(
-   id_audit_ SERIAL,
-   time_ TIME NOT NULL,
-   ip VARCHAR(50)  NOT NULL,
-   PRIMARY KEY(id_audit_),
-   UNIQUE(ip)
+CREATE TABLE IF NOT EXISTS edusys.audit (
+    id_audit_ BIGSERIAL PRIMARY KEY,
+    time_ TIME NOT NULL,
+    ip TEXT NOT NULL
 );
 
-CREATE TABLE type(
-   id_type SERIAL,
-   creation VARCHAR(50) ,
-   modification VARCHAR(50) ,
-   delete_ VARCHAR(50) ,
-   id_audit_ INTEGER NOT NULL,
-   PRIMARY KEY(id_type),
-   FOREIGN KEY(id_audit_) REFERENCES audit(id_audit_)
+CREATE TABLE IF NOT EXISTS edusys.type (
+    id_type BIGSERIAL PRIMARY KEY,
+    creation_action TEXT,
+    modification_action TEXT,
+    delete_action TEXT,
+    id_audit_ BIGINT NOT NULL REFERENCES edusys.audit(id_audit_) ON DELETE CASCADE
 );
 
-CREATE TABLE inscription(
-   id_inscription SERIAL,
-   name VARCHAR(50)  NOT NULL,
-   surname VARCHAR(50)  NOT NULL,
-   date_ DATE NOT NULL,
-   PRIMARY KEY(id_inscription)
+CREATE TABLE IF NOT EXISTS edusys.inscription (
+    id_inscription BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    date_ DATE NOT NULL
 );
 
-CREATE TABLE grade(
-   id_grade SERIAL,
-   grade VARCHAR(50) ,
-   coefficient NUMERIC(4,2)  ,
-   id_subject INTEGER NOT NULL,
-   PRIMARY KEY(id_grade),
-   FOREIGN KEY(id_subject) REFERENCES subject(id_subject)
+CREATE TABLE IF NOT EXISTS edusys.grade (
+    id_grade BIGSERIAL PRIMARY KEY,
+    grade TEXT NOT NULL CHECK (grade ~ '^\\d+$' AND grade::integer >= 0 AND grade::integer <= 20),
+    coefficient NUMERIC(4,2) CHECK (coefficient >= 0),
+    id_subject BIGINT NOT NULL REFERENCES edusys.subject(id_subject) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE school(
-   id_school SERIAL,
-   name_of_the_school VARCHAR(50)  NOT NULL,
-   address VARCHAR(50)  NOT NULL,
-   telephone VARCHAR(50)  NOT NULL,
-   id_inscription INTEGER NOT NULL,
-   PRIMARY KEY(id_school),
-   UNIQUE(telephone),
-   FOREIGN KEY(id_inscription) REFERENCES inscription(id_inscription)
+CREATE TABLE IF NOT EXISTS edusys.school (
+    id_school BIGSERIAL PRIMARY KEY,
+    school_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    telephone TEXT NOT NULL,
+    id_inscription BIGINT NOT NULL REFERENCES edusys.inscription(id_inscription) ON DELETE CASCADE
 );
 
-CREATE TABLE student(
-   id_student SERIAL,
-   name VARCHAR(50)  NOT NULL,
-   surname VARCHAR(50)  NOT NULL,
-   date_of_birth DATE NOT NULL,
-   id_grade INTEGER NOT NULL,
-   id_class INTEGER NOT NULL,
-   PRIMARY KEY(id_student),
-   FOREIGN KEY(id_grade) REFERENCES grade(id_grade),
-   FOREIGN KEY(id_class) REFERENCES class(id_class)
+CREATE TABLE IF NOT EXISTS edusys.student (
+    id_student BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    date_of_birth DATE NOT NULL,
+    id_grade BIGINT NOT NULL REFERENCES edusys.grade(id_grade) ON DELETE CASCADE,
+    id_class BIGINT NOT NULL REFERENCES edusys.class(id_class) ON DELETE CASCADE
 );
 
-CREATE TABLE personel(
-   id_personel SERIAL,
-   name VARCHAR(50)  NOT NULL,
-   surname VARCHAR(50)  NOT NULL,
-   email VARCHAR(50)  NOT NULL,
-   phone_number VARCHAR(50)  NOT NULL,
-   id_school INTEGER NOT NULL,
-   id_user INTEGER NOT NULL,
-   PRIMARY KEY(id_personel),
-   UNIQUE(id_user),
-   UNIQUE(email),
-   UNIQUE(phone_number),
-   FOREIGN KEY(id_school) REFERENCES school(id_school),
-   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+CREATE TABLE IF NOT EXISTS edusys.personel (
+    id_personel BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    phone_number TEXT NOT NULL,
+    id_school BIGINT NOT NULL REFERENCES edusys.school(id_school) ON DELETE CASCADE,
+    id_user BIGINT NOT NULL UNIQUE REFERENCES edusys.user_(id_user) ON DELETE CASCADE,
+    email_digest TEXT
 );
 
-CREATE TABLE absence(
-   id_absence SERIAL,
-   motif VARCHAR(50)  NOT NULL,
-   justification VARCHAR(50)  NOT NULL,
-   date_ DATE NOT NULL,
-   id_student INTEGER NOT NULL,
-   PRIMARY KEY(id_absence),
-   FOREIGN KEY(id_student) REFERENCES student(id_student)
+CREATE TABLE IF NOT EXISTS edusys.absence (
+    id_absence BIGSERIAL PRIMARY KEY,
+    motif TEXT NOT NULL,
+    justification TEXT NOT NULL,
+    date_ DATE NOT NULL,
+    id_student BIGINT NOT NULL REFERENCES edusys.student(id_student) ON DELETE CASCADE
 );
 
-CREATE TABLE authority_(
-   id_student INTEGER,
-   id_parent INTEGER,
-   PRIMARY KEY(id_student, id_parent),
-   FOREIGN KEY(id_student) REFERENCES student(id_student),
-   FOREIGN KEY(id_parent) REFERENCES parents(id_parent)
+CREATE TABLE IF NOT EXISTS edusys.authority (
+    id_student BIGINT NOT NULL REFERENCES edusys.student(id_student) ON DELETE CASCADE,
+    id_parent BIGINT NOT NULL REFERENCES edusys.parents(id_parent) ON DELETE CASCADE,
+    PRIMARY KEY(id_student, id_parent)
 );
 
-CREATE TABLE teach(
-   id_class INTEGER,
-   id_subject INTEGER,
-   PRIMARY KEY(id_class, id_subject),
-   FOREIGN KEY(id_class) REFERENCES class(id_class),
-   FOREIGN KEY(id_subject) REFERENCES subject(id_subject)
+CREATE TABLE IF NOT EXISTS edusys.teach (
+    id_class BIGINT NOT NULL REFERENCES edusys.class(id_class) ON DELETE CASCADE,
+    id_subject BIGINT NOT NULL REFERENCES edusys.subject(id_subject) ON DELETE CASCADE,
+    PRIMARY KEY(id_class, id_subject)
 );
 
-CREATE TABLE present(
-   id_parent INTEGER,
-   id_subject INTEGER,
-   id_teacher INTEGER,
-   PRIMARY KEY(id_parent, id_subject, id_teacher),
-   FOREIGN KEY(id_parent) REFERENCES parents(id_parent),
-   FOREIGN KEY(id_subject) REFERENCES subject(id_subject),
-   FOREIGN KEY(id_teacher) REFERENCES teacher(id_teacher)
+CREATE TABLE IF NOT EXISTS edusys.present (
+    id_parent BIGINT NOT NULL REFERENCES edusys.parents(id_parent) ON DELETE CASCADE,
+    id_subject BIGINT NOT NULL REFERENCES edusys.subject(id_subject) ON DELETE CASCADE,
+    id_teacher BIGINT NOT NULL REFERENCES edusys.teacher(id_teacher) ON DELETE CASCADE,
+    PRIMARY KEY(id_parent, id_subject, id_teacher)
 );
 
-CREATE TABLE utilize(
-   id_student INTEGER,
-   id_user INTEGER,
-   PRIMARY KEY(id_student, id_user),
-   FOREIGN KEY(id_student) REFERENCES student(id_student),
-   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+CREATE TABLE IF NOT EXISTS edusys.utilize (
+    id_student BIGINT NOT NULL REFERENCES edusys.student(id_student) ON DELETE CASCADE,
+    id_user BIGINT NOT NULL REFERENCES edusys.user_(id_user) ON DELETE CASCADE,
+    PRIMARY KEY(id_student, id_user)
 );
 
-CREATE TABLE auditing(
-   id_user INTEGER,
-   id_audit_ INTEGER,
-   PRIMARY KEY(id_user, id_audit_),
-   FOREIGN KEY(id_user) REFERENCES user_(id_user),
-   FOREIGN KEY(id_audit_) REFERENCES audit(id_audit_)
+CREATE TABLE IF NOT EXISTS edusys.auditing (
+    id_user BIGINT NOT NULL REFERENCES edusys.user_(id_user) ON DELETE CASCADE,
+    id_audit_ BIGINT NOT NULL REFERENCES edusys.audit(id_audit_) ON DELETE CASCADE,
+    PRIMARY KEY(id_user, id_audit_)
 );
             </code></pre>
         </div>
@@ -209,3 +170,4 @@ CREATE TABLE auditing(
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
 </body>
 </html>
+
